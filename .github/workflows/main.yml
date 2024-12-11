@@ -30,7 +30,9 @@ jobs:
 
       # - name: Build project
       #   run: mvn compile -DskipTests
-
+      # List files in the source directory to verify contents
+      - name: List files in source directory
+        run: ls -R ./src  # Adjust this path based on where your source files are located
       # # Step 3: Build the project (adjust based on your build tool)
       # - name: Build with Maven
       #   run: mvn --batch-mode --update-snapshots verify
@@ -47,7 +49,7 @@ jobs:
         uses: aws-actions/codeguru-reviewer@v1.1
         with:
           s3_bucket: ${{ secrets.AWS_CODEGURU_REVIEWER_S3_BUCKET }}  # S3 bucket for CodeGuru artifacts
-          build_path: target   # Path to your build artifacts (adjust if necessary)
+          build_path: ./src   # Path to your build artifacts (adjust if necessary)
 
       # Step 6: Upload review results to GitHub (optional)
       - name: Upload review results
