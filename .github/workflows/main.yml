@@ -1,0 +1,56 @@
+name: CodeGuru Reviewer Integration
+
+on:
+  push:
+    branches: [main]  # Adjust this to your default branch if different
+  pull_request:
+    branches: [main]
+
+permissions:
+  id-token: write  # Required for OIDC token
+  contents: read    # Required to access the repository content
+  security-events: write  # Required for uploading SARIF files
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      # Step 2: Set up Java (if applicable)
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'  # Use Temurin distribution for OpenJDK
+          java-version: '11'        # Specify the Java version you need
+
+      # - name: Build project
+      #   run: mvn compile -DskipTests
+
+      # # Step 3: Build the project (adjust based on your build tool)
+      # - name: Build with Maven
+      #   run: mvn --batch-mode --update-snapshots verify
+
+      # Step 4: Configure AWS Credentials using OIDC
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}  # ARN of the IAM role created for OIDC
+          aws-region: us-east-1  # Specify your AWS region
+
+      # Step 5: Run CodeGuru Reviewer
+      - name: Amazon CodeGuru Reviewer
+        uses: aws-actions/codeguru-reviewer@v1.1
+        with:
+          s3_bucket: ${{ secrets.AWS_CODEGURU_REVIEWER_S3_BUCKET }}  # S3 bucket for CodeGuru artifacts
+          build_path: target   # Path to your build artifacts (adjust if necessary)
+
+      # Step 6: Upload review results to GitHub (optional)
+      - name: Upload review results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: codeguru-results.sarif.json  # Adjust based on your output file name
