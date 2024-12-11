@@ -2,9 +2,9 @@ name: CodeGuru Reviewer Integration
 
 on:
   push:
-    branches: [main]  # Adjust this to your default branch if different
+    branches: [master]  # Adjust this to your default branch if different
   pull_request:
-    branches: [main]
+    branches: [master]
 
 permissions:
   id-token: write  # Required for OIDC token
